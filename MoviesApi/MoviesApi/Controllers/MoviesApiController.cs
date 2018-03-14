@@ -1,44 +1,68 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc;
+using MoviesApi.DataServices;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 
 namespace MoviesApi.Controllers
 {
     [Route("api/[controller]")]
     public class MoviesApiController : Controller
     {
+        private readonly IDataService _dataService;
+
+        public MoviesApiController(IDataService dataService)
+        {
+            _dataService = dataService;
+        }
+
         // GET api/values
         [HttpGet]
-        public IEnumerable<string> Get()
+        public IActionResult Get()
         {
-            return new string[] { "value1", "value2" };
+            return Ok(_dataService.GetMovies(null, null));
         }
 
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("title/{title}")]
+        public IActionResult GetMoviesByTitle(string title)
         {
-            return "value";
+            var results = _dataService.GetMovies(title, null);
+
+            if (results.Count() == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(results);
         }
 
-        // POST api/values
-        [HttpPost]
-        public void Post([FromBody]string value)
+        [HttpGet("title")]
+        public IActionResult GetMoviesByTitleNoSearchCriteria()
         {
+            return BadRequest();
         }
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        [HttpGet("year/{year}")]
+        public IActionResult GetMoviesByYearOfRelease(int year)
         {
+            var results = _dataService.GetMovies(null, year);
+
+            if (results.Count() == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(results);
         }
 
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpGet("year")]
+        public IActionResult GetMoviesByYearOfReleaseNoSearchCriteria()
         {
+            return BadRequest();
+        }
+
+        [HttpGet("genres")]
+        public IActionResult GetGenres()
+        {
+            return Ok(_dataService.GetGenres());
         }
     }
 }
