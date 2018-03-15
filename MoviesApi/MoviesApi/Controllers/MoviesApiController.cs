@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MoviesApi.DataServices;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MoviesApi.Controllers
 {
@@ -14,24 +15,34 @@ namespace MoviesApi.Controllers
             _dataService = dataService;
         }
 
-        // GET api/values
         [HttpGet]
         public IActionResult Get()
         {
             return Ok(_dataService.GetMovies(null, null));
         }
 
-        [HttpGet("title/{title}")]
-        public IActionResult GetMoviesByTitle(string title)
+        [HttpGet("search/{title}/{year}")]
+        public async Task<IActionResult> GetMoviesByTitle(string title, int year)
         {
-            var results = _dataService.GetMovies(title, null);
-
-            if (results.Count() == 0)
+            if (string.IsNullOrWhiteSpace(title))
             {
-                return NotFound();
+                return BadRequest();
             }
 
-            return Ok(results);
+            return await GetMovies(title, year);
+
+        }
+
+        [HttpGet("title/{title}")]
+        public async Task<IActionResult> GetMoviesByTitle(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                return BadRequest();
+            }
+
+            return await GetMovies(title, null);
+
         }
 
         [HttpGet("title")]
@@ -41,9 +52,20 @@ namespace MoviesApi.Controllers
         }
 
         [HttpGet("year/{year}")]
-        public IActionResult GetMoviesByYearOfRelease(int year)
+        public async Task<IActionResult> GetMoviesByYearOfRelease(int year)
         {
-            var results = _dataService.GetMovies(null, year);
+            return await GetMovies(null, year);
+        }
+
+        [HttpGet("year")]
+        public IActionResult GetMoviesByYearOfReleaseNoSearchCriteria()
+        {
+            return BadRequest();
+        }
+
+        private async Task<IActionResult> GetMovies(string title, int? year)
+        {
+            var results = await _dataService.GetMovies(title, year);
 
             if (results.Count() == 0)
             {
@@ -53,16 +75,49 @@ namespace MoviesApi.Controllers
             return Ok(results);
         }
 
-        [HttpGet("year")]
-        public IActionResult GetMoviesByYearOfReleaseNoSearchCriteria()
+        [HttpGet("genres")]
+        public async Task<IActionResult> GetGenres()
         {
-            return BadRequest();
+            return Ok(await _dataService.GetGenres());
         }
 
-        [HttpGet("genres")]
-        public IActionResult GetGenres()
+        [HttpGet("genre/{genreId}")]
+        public async Task<IActionResult> GetMoviesByGenre(int genreId)
         {
-            return Ok(_dataService.GetGenres());
+            return Ok(await _dataService.GetMoviesByGenre(genreId));
+        }
+
+        [HttpGet("top5")]
+        public async Task<IActionResult> GetTopFiveMovies()
+        {
+            return Ok(await _dataService.GetTopFiveMovies());
+        }
+
+        [HttpGet("top5/{userId}")]
+        public async Task<IActionResult> GetTopFiveMovies(int userId)
+        {
+            return Ok(await _dataService.GetTopFiveMovies(userId));
+        }
+
+        [HttpPost("rating/{userId}/{movieId}/{value}")]
+        public async Task<IActionResult> UpdateRating(int userId, int movieId, int value)
+        {
+            var doesUserExist = await _dataService.DoesUserExist(userId);
+            var doesMovieExist = await _dataService.DoesUserExist(movieId);
+
+            if (!doesUserExist || !doesMovieExist)
+            {
+                return NotFound();
+            }
+
+            if (value < 1 || value > 5)
+            {
+                return BadRequest();
+            }
+
+            await _dataService.UpdateRating(userId, movieId, value);
+
+            return Ok();
         }
     }
 }

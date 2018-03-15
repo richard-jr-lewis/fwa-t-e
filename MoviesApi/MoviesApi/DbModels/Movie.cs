@@ -14,6 +14,6 @@ namespace MoviesApi.DbModels
 
         public int RunningTime { get; set; }
 
-        public IEnumerable<Genre> Genres { get; set; }
+        public ICollection<MovieGenre> MovieGenres { get; set; }
     }
 }
