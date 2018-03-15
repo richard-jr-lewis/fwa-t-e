@@ -42,5 +42,5 @@ Given more time, I would work to improve the following:
 * Update API call for updating ratings to receive a JSON object
 * Include user authentication to ensure that a user can only update their own ratings
 * Mock the context in the tests so that it is not dependent on a data source when testing controllers
-* Log test data to confirm results
+* Extend tests with additional data checks to confirm results
 * Create a html UI to call the APIs and display the data as well as form submission using Razor
